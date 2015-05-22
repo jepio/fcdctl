@@ -23,6 +23,23 @@ cdef extern from "hidapi.h":
 cdef extern void c_print_list "print_list" ()
 cdef extern void c_print_help "print_help" ()
 
+from threading import RLock
+from functools import wraps
+
+dongle_lock = RLock()
+
+
+def _dongle_call(method):
+    '''Wrapper to call fcdctl api functions while holding the dongle_lock.'''
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        global whichdongle
+        with dongle_lock:
+            whichdongle = self.donglenum
+            return method(self, *args, **kwargs)
+    return wrapper
+
+
 class Dongle:
     '''
     A Funcube Dongle wrapper class.
@@ -32,6 +49,29 @@ class Dongle:
     '''
     def __init__(self, number):
         self.donglenum = number
+
+
+def find_all_dongles():
+    '''
+    Return a list of Dongle objects corresponding to all Funcube Dongles
+    present in the system.
+    '''
+    cdef hid_device_info * devices = hid_enumerate(_usVID, _usPID)
+    cdef int idx = 0
+    if devices == NULL:
+        raise RuntimeError("No FCD found")
+    global whichdongle
+    dongles = []
+    with dongle_lock:
+        while devices != NULL:
+            whichdongle = idx
+            status = fcdGetMode()
+            dongle = Dongle(idx)
+            dongle.status = status
+            dongles.append(dongle)
+            idx += 1
+            devices = devices.next
+    return dongles
 
 
 def print_list():
