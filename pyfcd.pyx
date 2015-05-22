@@ -23,6 +23,17 @@ cdef extern from "hidapi.h":
 cdef extern void c_print_list "print_list" ()
 cdef extern void c_print_help "print_help" ()
 
+class Dongle:
+    '''
+    A Funcube Dongle wrapper class.
+
+    Attributes:
+        donglenum (int) - the dongle number as returned by hidapi.
+    '''
+    def __init__(self, number):
+        self.donglenum = number
+
+
 def print_list():
     '''Print list of all Funcube Dongles.'''
     c_print_list()
