@@ -80,6 +80,8 @@ EXTERN FCD_API_EXPORT FCD_API_CALL FCD_MODE_ENUM fcdBlWriteFirmware(char *pc, in
 EXTERN FCD_API_EXPORT FCD_API_CALL FCD_MODE_ENUM fcdBlVerifyFirmware(char *pc, int64_t n64Size);
 
 extern int whichdongle;
+extern const unsigned short _usVID;
+extern const unsigned short _usPID;
 
 #ifdef __cplusplus
 }
